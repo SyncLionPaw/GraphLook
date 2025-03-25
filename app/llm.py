@@ -1,15 +1,51 @@
+import tomllib
+from pathlib import Path
 from typing import List, Union
+
 from openai import AsyncOpenAI
+
 from .scheme import Message
 
 
+def get_project_root() -> Path:
+    return Path(__file__).parent.parent
+
+
+PROJECT_ROOT = get_project_root()
+
+
 class LLMSettings:
-    def __init__(self, model, base_url, api_key, temperature=1.0, max_tokens=4096):
+    def __init__(
+        self, model, base_url, api_key, temperature=1.0, max_tokens=4096, **params
+    ):
         self.model: str = model
         self.base_url: str = base_url
         self.api_key: str = api_key
         self.temperature: float = temperature
         self.max_tokens: int = max_tokens
+
+
+class Config:
+    @classmethod
+    def load_config(cls):
+        root = PROJECT_ROOT
+        config_path = root / "config" / "config.toml"
+        if not config_path.exists():
+            raise FileNotFoundError("LLM配置文件不存在")
+
+        with open(config_path, "rb") as f:
+            raw_config: dict = tomllib.load(f)
+        return raw_config
+
+    @classmethod
+    def get_llm_config(cls):
+        llm_config = cls.load_config()["llm"]
+        fields = ["model", "base_url", "api_key"]
+
+        for field in fields:
+            if field not in llm_config:
+                raise KeyError(f"{field} not found")
+        return LLMSettings(**llm_config)
 
 
 class LLM:
@@ -50,7 +86,7 @@ class LLM:
                     ans.append(m)
         return ans
 
-    async def ask(self, messages: List[Union[dict, Message]]):
+    async def ask(self, messages: List[Union[dict, Message]], hook_after_resp=None):
         # 询问LLM，获取响应答案
         formatted_msgs = self.format_message(messages)
         params = {"model": self.model, "messages": formatted_msgs}
