@@ -4,3 +4,11 @@ base_url = "https://api.anthropic.com/v1/"  # API endpoint URL
 api_key = "YOUR_API_KEY"                    # Your API key
 max_tokens = 8192                           # Maximum number of tokens in the response
 temperature = 0.0                           # Controls randomness
+
+# [llm] #OLLAMA:
+# api_type = 'ollama'
+# model = "llama3.2"
+# base_url = "http://localhost:11434/v1"
+# api_key = "ollama"
+# max_tokens = 4096
+# temperature = 0.0

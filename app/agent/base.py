@@ -1,3 +1,4 @@
+from typing import Dict, List
 from app.scheme import Memory
 from ..llm import LLM
 
@@ -13,7 +14,7 @@ class BaseAgent:
 
         self.llm: LLM = llm
 
-    async def run(self):
+    async def run(self, mode="debug"):
         while True:
             q = input("请输入您的问题(quit 或者 exit退出):\nUser:")
             if q == "quit" or q == "exit":
@@ -39,14 +40,18 @@ class MemoryAgent(BaseAgent):
         item = {"role": role, "content": content}
         self.memory.add_message(item)
 
-    async def run(self):
+    def get_function_tools(self) -> List[Dict[str, dict]]:
+        return []
+
+    async def run(self, mode="debug"):
         while True:
             q = input("请输入您的问题(quit 或者 exit退出):\nUser:")
             if q == "quit" or q == "exit":
                 return
 
             self.update_memory(q, "user")
-            print(self.memory)
+            if mode == "debug":
+                print(self.memory)
 
             resp = await self.llm.ask(self.memory.messages)  # 上下文的来源，token消耗
             print("Agent:", resp, "\n")
