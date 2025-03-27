@@ -125,6 +125,7 @@ class LLM:
         if len(tool_calls) > 0:
             for tool_call in tool_calls:
                 func_name = tool_call.function.name
+                print(tool_call.function.arguments)
                 func_args = json.loads(tool_call.function.arguments)
                 funcs_to_call.append({"name": func_name, "arguments": func_args})
         return resp.choices[0].message.content, funcs_to_call
