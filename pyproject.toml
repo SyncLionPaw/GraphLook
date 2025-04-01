@@ -7,5 +7,7 @@ requires-python = ">=3.12"
 dependencies = [
     "aiofiles>=24.1.0",
     "mcp[cli]>=1.5.0",
+    "ollama>=0.4.7",
     "openai>=1.68.2",
+    "pymilvus[model]>=2.5.6",
 ]
