@@ -1,49 +1,46 @@
-from pymilvus import MilvusClient
+from pymilvus import DataType, MilvusClient
 from pymilvus import model
 
 
-client = MilvusClient("milvus_demo.db")
-
-if client.has_collection(collection_name="demo_collection"):
-    client.drop_collection(collection_name="demo_collection")
-
-client.create_collection(
-    collection_name="demo_collection",
-    dimension=768,  # The vectors we will use in this demo has 768 dimensions
-)
+client = MilvusClient(uri="http://localhost:19530", token="root:Milvus")
 
 
-embedding_fn = model.DefaultEmbeddingFunction()
+databases = client.list_databases()
 
-docs = [
-    "Artificial intelligence was founded as an academic discipline in 1956.",
-    "Alan Turing was the first person to conduct substantial research in AI.",
-    "Born in Maida Vale, London, Turing was raised in southern England.",
-]
+DATABASE = "my_database_1"
 
-vectors = embedding_fn.encode_documents(docs)
-print("Dim:", embedding_fn.dim, vectors[0].shape)  # Dim: 768 (768,)
+if DATABASE not in databases:
+    client.create_database(DATABASE)
 
-data = [
-    {"id": i, "vector": vectors[i], "text": docs[i], "subject": "history"}
-    for i in range(len(vectors))
-]
+if "c1" not in client.list_collections():
 
-print("Data has", len(data), "entities, each with fields: ", data[0].keys())
-print("Vector dim:", len(data[0]["vector"]))
+    schema = MilvusClient.create_schema(
+        auto_id=False,
+        enable_dynamic_field=True
+    )
 
+    # 3.3. Prepare index parameters
+    index_params = client.prepare_index_params()
 
-res = client.insert(collection_name="demo_collection", data=data)
+    # 3.4. Add indexes
+    index_params.add_index(
+        field_name="my_id",
+        index_type="AUTOINDEX"
+    )
 
-print(res)
+    index_params.add_index(
+        field_name="my_vector", 
+        index_type="AUTOINDEX",
+        metric_type="COSINE"
+    )
 
-query_vectors = embedding_fn.encode_queries(["Who is Alan Turing?"])
+    # 3.2. Add fields to schema
+    schema.add_field(field_name="my_id", datatype=DataType.INT64, is_primary=True)
+    schema.add_field(field_name="my_vector", datatype=DataType.FLOAT_VECTOR, dim=5)
+    schema.add_field(field_name="my_varchar", datatype=DataType.VARCHAR, max_length=512)
 
-res = client.search(
-    collection_name="demo_collection",  # target collection
-    data=query_vectors,  # query vectors
-    limit=2,  # number of returned entities
-    output_fields=["text", "subject"],  # specifies fields to be returned
-)
+    client.create_collection(collection_name="c1", schema=schema, index_params=index_params)
+
+res = client.get_load_state(collection_name="c1")
 
 print(res)
