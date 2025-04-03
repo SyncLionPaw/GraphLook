@@ -3,7 +3,7 @@ from app.llm import LLM, Config
 from app.agent.base import BaseAgent, MemoryAgent
 from app.agent.toolcall import ToolCallAgent
 from app.agent.planning import PlanningAgent
-
+from app.rag.rag import RagAgent, create_test_doc
 
 async def test_base_agent():
     llm_settings = Config.get_llm_config()
@@ -36,9 +36,19 @@ async def test_planning_agent():
     tc_agent = PlanningAgent("test4", "planning agent", llm, max_message=3)
     await tc_agent.run()
 
+async def test_rag_agent():
+    llm_settings = Config.get_llm_config()
+
+    llm = LLM(llm_config=llm_settings)
+
+    create_test_doc()
+
+    r_agent = RagAgent("test5", "rag agent", llm, max_message=5)
+    await r_agent.run()
 
 if __name__ == "__main__":
     # asyncio.run(test_base_agent())
     # asyncio.run(test_memory_agent())
     # asyncio.run(test_toolcall_agent())
-    asyncio.run(test_planning_agent())
+    # asyncio.run(test_planning_agent())
+    asyncio.run(test_rag_agent())

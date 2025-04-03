@@ -1,8 +1,6 @@
 import time
 import ollama
 from pymilvus import MilvusClient, DataType, FieldSchema, CollectionSchema
-import numpy as np
-import sys
 
 # 运行这个代码的时候，不能使用代理，否则本应请求的11434会转发到代理端口
 docs = [
