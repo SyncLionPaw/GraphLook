@@ -29,3 +29,6 @@ def list_txt_files() -> int:
 
 if __name__ == "__main__":
     mcp.run()
+
+
+# npx @modelcontextprotocol/inspector uv --directory tests run addtool.py

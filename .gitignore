@@ -187,3 +187,5 @@ workspace/*
 app/rag/volumes
 
 tests/pydantic_
+
+.DS_store
